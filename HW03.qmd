@@ -1,0 +1,153 @@
+---
+title: "HW03"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+load("hw2_list.rda")
+
+```
+
+```{r}
+bp_list
+
+```
+
+# Task 1: Control Flow Practice
+
+### 1. Suppose we want to characterize the post-treatment (or placebo) blood pressure measurement as optimal (≤ 120), borderline (120 \< bp ≤ 130), and high (\> 130). First, create a new column in each data frame from above called status.
+
+```{r}
+
+#bp_list$Status <-character(10)
+
+bp_list$placebo$Status <- ifelse(bp_list$placebo$post_bp <=120, "Optimal",
+       ifelse((bp_list$placebo$post_bp >120 & bp_list$placebo$post_bp <=130), "Borderline",
+              ifelse(bp_list$placebo$post_bp >130, "High", NA))
+       ) 
+       
+bp_list$placebo      
+```
+
+### 2. For the non-placebo data frame (within the list), create a for loop and use if/then/else logic to create the status column’s values.
+
+```{r}
+#bp_list$treatment$Stauts <-character(20)
+for (i in -1:20){
+ 
+bp_list$treatment$Status <- ifelse(bp_list$treatment$post_bp <=120, "Optimal",
+       ifelse((bp_list$treatment$post_bp >120 & bp_list$treatment$post_bp <=130), "Borderline",
+              ifelse(bp_list$treatment$post_bp >130, "High", NA))
+       )
+
+}
+
+head(bp_list$treatment) 
+
+#bp_list$treatment
+
+```
+
+### 3. Create for same placebo data frame
+
+```{r}
+#bp_list$placebo$Stauts <-character(10)
+#bp_list$placebo$Status
+for (i in -1:20){
+ 
+bp_list$placebo$Status <- ifelse(bp_list$placebo$post_bp <=120, "Optimal",
+       ifelse((bp_list$placebo$post_bp >120 & bp_list$placebo$post_bp <=130), "Borderline",
+              ifelse(bp_list$placebo$post_bp >130, "High", NA))
+       )
+#head(Final_data$treatment) 
+}
+
+#head(bp_list$placebo) 
+
+bp_list$placebo
+
+```
+
+# Task 2 Writing function
+
+```{r}
+
+# Create a function and pass 2 arguments bp_list (data frame) and statistics
+patient_summary <- function(bp_list, stat = "mean") {
+  # Check if the list has two elements if not then give message 
+  if(length(bp_list) != 2) {
+    stop("There should be exactly two data frames in the list: treatment and placebo data.")
+  }
+  
+  # Get the function for the 'stat' string
+  stat_fun <- get(stat)
+  
+  # Define the columns to calculate the statistic for pre_bp, post_bp and diff_dp columns in both the dataframes
+  stat_columns <- c("pre_bp", "post_bp", "diff_bp")
+  
+  # Initialize an empty vector to store the results
+  stat_result <- c()
+  
+  # crearte Loop through each data frame in the list
+  for(df_data in bp_list) {
+    # Check if all the columns exist in the data frame or not if not then show message that this column did not find in the data frame
+    for (col in stat_columns) {
+      if (!col %in% names(df_data)) {
+        stop(paste("Column", col, "not found in the data frame"))
+      }
+      
+      # Compute the statistic for the current column
+      stat_result <- c(stat_result, stat_fun(df_data[[col]], na.rm = TRUE))
+    }
+  }
+  
+  # Create meaningful names for the result vector
+  final_result <- c()
+  data_frame_names <- c("treatment", "placebo")
+  for (df_name in data_frame_names) {
+    for (col in stat_columns) {
+      final_result <- c(final_result, paste(df_name, col, sep = "_"))
+    }
+  }
+  
+  # Assign names to the result vector
+  names(stat_result) <- final_result
+  
+  # Return the result vector
+  return(stat_result)
+}
+```
+
+## show "mean", var", "sd", "min", and "max" for pre_bp, post_bp and diff_dp columns
+
+```{r}
+ # Show the mean of all the values
+mean_stats <- patient_summary(bp_list, stat = "mean")
+#print("The mean of all the values are ")
+print(mean_stats)
+
+# Show the var of all the values
+var_stats <- patient_summary(bp_list, stat = "var")
+print(var_stats)
+
+# Show the sd of all the values
+sd_stats <- patient_summary(bp_list, stat = "sd")
+print(sd_stats)
+
+# Show the min of all the values
+min_stats <- patient_summary(bp_list, stat = "min")
+print(min_stats)
+
+# Show the max of all the values
+max_stats <- patient_summary(bp_list, stat = "max")
+print(max_stats)
+
+```
+
+```{r}
+# Show the structure of the data frame
+str(bp_list)
+```
